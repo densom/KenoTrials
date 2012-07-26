@@ -21,6 +21,7 @@ namespace KenoTrials
 //            SetGameTicket(new[] { 17, 23, 36, 49, 3, 76, 54, 10, 8, 65 });
             SetGameTicket(new[] { 17, 23, 36, 49, 3, });
 
+            // play until all numbers are matched
             while (numbersMatched < _ticket.NumbersPlayed.Length)
             {
                 iterations++;
