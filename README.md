@@ -1,4 +1,4 @@
 KenoTrials
 ==========
 
-Simple Keno engine used to simulate games.
+Simple Keno engine used to simulate games.  Some samples included.
