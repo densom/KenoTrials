@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using KenoTrials.Keno;
@@ -50,7 +51,7 @@ namespace KenoTrials.WinForm
             var numbersToPlay = numberToPlayTextBox.Text.Split(',').Select(x => int.Parse(x.Trim()));
             var receipt = RegisterTicket(numbersToPlay);
 
-            MarkNumbersPlayed(receipt);
+            MarkNumbersPlayed(receipt.NumbersPlayed);
 
             foreach (var gameResult in _gameManager.Run())
             {
@@ -74,9 +75,9 @@ namespace KenoTrials.WinForm
             kenoBoard1.ResetBoard();
         }
 
-        private void MarkNumbersPlayed(GameReceipt receipt)
+        private void MarkNumbersPlayed(int[] numbersPlayed)
         {
-            foreach (var numPlayed in receipt.NumbersPlayed)
+            foreach (var numPlayed in numbersPlayed)
             {
                 kenoBoard1.MarkPlayed(numPlayed);
             }
@@ -84,31 +85,28 @@ namespace KenoTrials.WinForm
 
         private void SetNumbersPlayed()
         {
-            
+
         }
 
 
-//        private void PostGameAction2(params GameResult[] gameResult)
-//        {
-//            
-//        }
+        //        private void PostGameAction2(params GameResult[] gameResult)
+        //        {
+        //            
+        //        }
 
         private void PostGameAction()
         {
-            if (InvokeRequired)
-            {
-                Invoke(new Action(PostGameAction));
-            }
-            else
-            {
-                kenoBoard1.ResetBoard();
-                _numbersToPlay.ToList().ForEach(kenoBoard1.MarkPlayed);
-                _moneySpent -= _gameResult.Payout;
-                payoutLabel.Text = _moneySpent.ToString();    
-            }
-            
+
+            kenoBoard1.ResetBoard();
+            _numbersToPlay.ToList().ForEach(kenoBoard1.MarkPlayed);
+            _gameResult.NumbersMatched.ToList().ForEach(kenoBoard1.MarkMatched);
+            _moneySpent -= _gameResult.Payout;
+            payoutLabel.Text = _moneySpent.ToString();
+            Application.DoEvents();
+
         }
 
+        
         private void PlayGames()
         {
             int iterations = 0;
@@ -117,7 +115,7 @@ namespace KenoTrials.WinForm
             GameResult gameResult = null;
 
             //            SetGameTicket(new[] { 17, 23, 36, 49, 3, 76, 54, 10, 8, 65 });
-            
+
             SetGameTicket(_numbersToPlay);
 
             // play until all numbers are matched
@@ -126,17 +124,30 @@ namespace KenoTrials.WinForm
                 iterations++;
                 moneySpent += 1;
                 _gameResult = Play();
+                ShowIterations(iterations);
+                ShowMoneySpent(moneySpent);
                 PostGameAction();
 
                 //                numbersMatched = gameResult.NumbersMatched.Count();
             }
         }
 
+        private void ShowMoneySpent(decimal moneySpent)
+        {
+            moneySpentLabel.Text = moneySpent.ToString();
+        }
+
+        private void ShowIterations(int iterations)
+        {
+            iterationsLabel.Text = iterations.ToString();
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             _numbersToPlay = new[] { 17, 23, 36, 49, 3, };
-//            Parallel.Invoke(PlayGames);
+            PlayGames();
 
+            //            Sample(new[] { 17, 23, 36, 49, 3, });
 
         }
 
@@ -151,6 +162,29 @@ namespace KenoTrials.WinForm
             GameManager.RegisterTickets(_ticket, Player);
             var result = GameManager.Run();
             return result.First();
+        }
+
+        private void Sample(int[] numbersPlayed)
+        {
+            var gameManager = new GameManager();
+            decimal payout = 0;
+
+            for (int i = 0; i < 50; i++)
+            {
+                ClearBoard();
+                GameResult result = gameManager.PlayOne(numbersPlayed, 20);
+                MarkNumbersPlayed(numbersPlayed);
+                foreach (var numberMatched in result.NumbersMatched)
+                {
+                    kenoBoard1.MarkMatched(numberMatched);
+                }
+                payout += result.Payout;
+                ShowPayout(payout);
+                Application.DoEvents();
+                Thread.Sleep(200);
+
+            }
+
         }
     }
 }

@@ -17,6 +17,11 @@ namespace KenoTrials.Keno
 
         private Game _currentGame;
 
+        static GameManager()
+        {
+            InitializePayoutTable();
+        }
+
         public GameManager()
         {
             Initialize();
@@ -28,7 +33,7 @@ namespace KenoTrials.Keno
         }
 
         /// <summary>
-        /// Enqueues new game essions, up to the max defined
+        /// Enqueues new game sessions, up to the max defined
         /// </summary>
         public void RefreshAvailableGames()
         {
@@ -41,7 +46,7 @@ namespace KenoTrials.Keno
         private void Initialize()
         {
             RefreshAvailableGames();
-            InitializePayoutTable();
+//            InitializePayoutTable();
         }
 
         //expensive function...redo
@@ -406,6 +411,14 @@ namespace KenoTrials.Keno
             }
 
             return numberPool;
+        }
+
+        public GameResult PlayOne(int[] numbersPlayed, int betAmount)
+        {
+            var receipt = RegisterTickets(new GameTicket(1, betAmount, numbersPlayed.Length, numbersPlayed, false),new Player("Anonymous"));
+            var results = this.Run();
+
+            return results.First();
         }
     }
 }
